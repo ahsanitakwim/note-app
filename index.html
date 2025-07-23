@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes App Elegan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 60px 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .dark-mode {
+      background: #121212;
+      color: #e0e0e0;
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      max-width: 600px;
+      width: 100%;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .dark-mode .container {
+      background: #1e1e1e;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    #toggle-theme {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      color: inherit;
+      transition: transform 0.2s;
+    }
+
+    #toggle-theme:hover {
+      transform: rotate(20deg);
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1.5px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    button.add {
+      background: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button.add:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    li {
+      background: #f0f0f0;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    li:hover {
+      transform: translateX(5px);
+    }
+
+    .dark-mode li {
+      background: #2e2e2e;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      margin-left: 10px;
+      color: #555;
+      transition: color 0.3s ease;
+    }
+
+    .dark-mode .actions button {
+      color: #ccc;
+    }
+
+    .actions button:hover {
+      color: #007bff;
+    }
+
+    footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Notes App</h1>
+      <button id="toggle-theme" title="Ganti Tema">
+        <span class="material-icons" id="theme-icon">dark_mode</span>
+      </button>
+    </div>
+
+    <form id="note-form">
+      <input type="text" id="note-input" placeholder="Tulis catatan..." required />
+      <button class="add" type="submit">Tambah</button>
+    </form>
+
+    <ul id="note-list"></ul>
+
+    <footer>by Wim 🚀</footer>
+  </div>
+
+  <script>
+    const form = document.getElementById("note-form");
+    const input = document.getElementById("note-input");
+    const list = document.getElementById("note-list");
+    const toggleBtn = document.getElementById("toggle-theme");
+    const themeIcon = document.getElementById("theme-icon");
+    const body = document.body;
+
+    const notes = JSON.parse(localStorage.getItem("notes") || "[]");
+    notes.forEach(text => addNote(text));
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (text !== "") {
+        addNote(text);
+        saveNotes();
+        input.value = "";
+      }
+    });
+
+    function addNote(text) {
+      const li = document.createElement("li");
+      li.textContent = text;
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const delBtn = document.createElement("button");
+      delBtn.innerHTML = '<span class="material-icons">delete</span>';
+      delBtn.title = "Hapus";
+      delBtn.onclick = () => {
+        li.remove();
+        saveNotes();
+      };
+
+      actions.appendChild(delBtn);
+      li.appendChild(actions);
+      list.appendChild(li);
+    }
+
+    function saveNotes() {
+      const notes = [...list.children].map(li => li.firstChild.textContent.trim());
+      localStorage.setItem("notes", JSON.stringify(notes));
+    }
+
+    // Dark Mode
+    toggleBtn.onclick = () => {
+      body.classList.toggle("dark-mode");
+      const isDark = body.classList.contains("dark-mode");
+      themeIcon.textContent = isDark ? "light_mode" : "dark_mode";
+      localStorage.setItem("darkMode", isDark ? "enabled" : "disabled");
+    };
+
+    // Load theme
+    if (localStorage.getItem("darkMode") === "enabled") {
+      body.classList.add("dark-mode");
+      themeIcon.textContent = "light_mode";
+    }
+  </script>
+</body>
+</html>
